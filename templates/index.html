@@ -5,10 +5,10 @@
 {% endblock %}
 
 {% block main %}
+    {% raw %}
     <div id="positions">
-    </div>
-    <script type="text/html" id="positions_template">
-    <![CDATA[
+
+
     <table class="table table-striped">
         <thead>
             <tr>
@@ -23,38 +23,47 @@
             <tr>
                 <td>CASH</td>
                 <td colspan="3"></td>
-                <td><%= this.cash %></td>
+                <td>{{ cash }}</td>
 
             </tr>
             <tr>
                 <td colspan="4"></td>
-                <td><%= this.grand_total %></td>
+                <td>{{ grand_total }}</td>
             </tr>
         </tfoot>
         <tbody>
-                <% for (t=0; t < this.positions.length; t++) {
-                 var position = this.positions[t]; %>
-                <tr>
-                    <td><%= position.symbol %></td>
-                    <td><%= position.company %></td>
-                    <td><%= position.quantity %></td>
-                    <td><%= position.price %></td>
-                    <td><%= position.total %></td>
+                <tr v-for="position in positions">
+                    <td>{{ position.symbol }}</td>
+                    <td>{{ position.company }}</td>
+                    <td>{{ position.quantity }}</td>
+                    <td>{{ position.price }}</td>
+                    <td>{{ position.total }}</td>
                 </tr>
-                <% } %>
+
         </tbody>
     </table>
-    ]]>
-    </script>
+    </div>
+
     <script>
-    $( document ).ready(function() {
-        const request = new XMLHttpRequest();
-        request.open("GET", "/api/positions");
-        request.onload = function(data) {
-            const json_data = JSON.parse(request.responseText);
-            $('#positions').append($('#positions_template').jqote(json_data));
-        }
-        request.send();
-    });
+        var positions = new Vue({
+            el: '#positions',
+            data: {
+                positions: [],
+                cash: null,
+                grand_total: null
+            },
+            created () {
+                fetch('/api/positions')
+                    .then(response => response.json())
+                    .then(json => {
+                        this.positions = json.positions,
+                        this.cash = json.cash,
+                        this.grand_total = json.grand_total
+                    })
+            }
+        })
+
     </script>
+
+    {% endraw %}
 {% endblock %}
