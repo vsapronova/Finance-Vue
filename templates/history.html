@@ -1,15 +1,13 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Portfolio
+    Transactions
 {% endblock %}
 
 {% block main %}
-    <div id="transactions">
-    </div>
+{% raw %}
+<div id="transactions">
 
-<script type="text/html" id="transactions_template">
-<![CDATA[
 <table class="table table-striped">
     <thead>
         <tr>
@@ -20,29 +18,33 @@
         </tr>
     </thead>
     <tbody>
-            <% for (t=0; t < this.transactions.length; t++) {
-                 var transaction = this.transactions[t]; %>
-            <tr>
-                <td><%= transaction.symbol %></td>
-                <td><%= transaction.quantity %></td>
-                <td><%= transaction.price %></td>
-                <td><%= transaction.date %></td>
-            </tr>
-            <% } %>
+          <tr v-for="transaction in transactions">
+              <td>{{ transaction.symbol }}</td>
+              <td>{{ transaction.quantity }}</td>
+              <td>{{ transaction.price }}</td>
+              <td>{{ transaction.date }}</td>
+          </tr>
     </tbody>
 </table>
-]]>
+</div>
+
+<script>
+    var transactions = new Vue ({
+        el: '#transactions',
+        data: {
+            transactions: []
+        },
+        created () {
+            fetch('/api/history')
+                .then(response => response.json())
+                .then(json => {
+                    this.transactions = json.transactions
+
+                })
+        }
+
+  })
 </script>
 
-    <script>
-    $( document ).ready(function() {
-      const request = new XMLHttpRequest();
-      request.open("GET", "/api/history");
-      request.onload = function(data) {
-        const json_data = JSON.parse(request.responseText);
-        $('#transactions').append($('#transactions_template').jqote(json_data));
-      }
-      request.send();
-    });
-    </script>
+{% endraw %}
 {% endblock %}
