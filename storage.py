@@ -64,7 +64,7 @@ class Storage:
     def update_cash(self, user_id, cash):
         self.db.execute("UPDATE users SET cash = :cash WHERE id = :user_id", cash=cash, user_id=user_id )
 
-    def delete_position(self, user_id, symbol):
+    def delete_zero_position(self, user_id, symbol):
         self.db.execute("DELETE FROM positions WHERE user_id = :user_id AND symbol = :symbol AND quantity = 0",
         user_id=user_id,
         symbol=symbol)

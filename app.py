@@ -159,8 +159,9 @@ def api_quote2():
 @app.route("/api/buy", methods=["POST"])
 @login_required
 def api_buy2():
-    symbol = request.form.get("symbol")
-    shares = request.form.get("shares")
+    content = request.get_json(force=True)
+    symbol = content['symbol']
+    shares = content['shares']
 
     if symbol is "":
         raise HTTPException("symbol can't be empty", 403)
@@ -228,11 +229,11 @@ def api_sell2():
         cash = selling_quantity * symbol["price"] + existing_cash
         storage.update_cash(session["user_id"], cash)
 
-        if selling_quantity < existing_quantity:
-            new_quantity = existing_quantity - selling_quantity
-            storage.update_position_quantity(session["user_id"], symbol["symbol"], new_quantity)
-        elif selling_quantity == existing_quantity:
-            storage.delete_position(session["user_id"], symbol["symbol"])
+
+        new_quantity = existing_quantity - selling_quantity
+        storage.update_position_quantity(session["user_id"], symbol["symbol"], new_quantity)
+        if new_quantity == 0:
+            storage.delete_zero_position(session["user_id"], symbol["symbol"])
         return "", 200
 
 

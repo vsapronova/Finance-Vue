@@ -5,50 +5,51 @@
 {% endblock %}
 
 {% block main %}
+{% raw %}
 
     <form id="form_buy" method="post">
         <div class="form-group">
-            <input autocomplete="off" autofocus class="form-control" name="symbol" placeholder="Symbol" type="text">
+            <input v-model="symbol" autocomplete="off" autofocus class="form-control" name="symbol" placeholder="Symbol" type="text">
         </div>
         <div class="form-group">
-            <input autocomplete="off" autofocus class="form-control" name="shares" placeholder="Shares" type="text">
+            <input v-model="shares" autocomplete="off" autofocus class="form-control" name="shares" placeholder="Shares" type="text">
         </div>
-        <button class="btn btn-primary" type="submit">Buy</button>
+        <button @click.stop.prevent="submit()" class="btn btn-primary" type="submit">Buy</button>
     </form>
-    <div id="error" style="display: none; margin: 50px; width: 300px; margin-left: 380px" class="alert alert-danger" role="alert" >
-
+    <div id="error" v-for="error in errors" style="display: none; margin: 50px; width: 300px; margin-left: 380px" class="alert alert-danger" role="alert" >
+            {{ error.message }}
     </div>
 
 <script>
+    var form_buy = new Vue({
+        el: '#form_buy',
+        data: {
+            symbol: null,
+            shares: null,
+            errors: []
+        },
+        methods: {
+            submit() {
 
+                const request = new Request(
+                "api/buy",
+                {
+                    method: "POST",
+                    body: JSON.stringify({symbol: this.symbol, shares: parseInt(this.shares, 10)})
+                }
+                );
+            const res = fetch(request);
 
-$( document ).ready(function() {
-
-    $( "#form_buy" ).submit(function( event ) {
-        event.preventDefault();
-        $("#error").hide();
-
-
-        var values = $("#form_buy").serializeArray();
-
-        var posting = $.post( "/api/buy", values )
-        .done( function(data) {
-            window.location.href = "index.html";
-        })
-        .fail( function(xhr, textStatus, errorThrown) {
-            if (xhr.hasOwnProperty('responseJSON')) {
-                $("#error").show();
-                $("#error").text(xhr.responseJSON.message);
-            } else {
-                $("#error").show();
-                $("#error").text("Something really unexpected happened");
+            window.location.href = "index.html"
             }
-        });
+        }
+
+
+
 
     })
 
-})
-
 </script>
 
+{% endraw %}
 {% endblock %}
