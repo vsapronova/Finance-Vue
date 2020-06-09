@@ -163,10 +163,10 @@ def api_buy2():
     symbol = content['symbol']
     shares = content['shares']
 
-    if symbol is "":
+    if symbol is None:
         raise HTTPException("symbol can't be empty", 403)
 
-    if shares is "":
+    if shares is None:
         raise HTTPException("must provide shares", 403)
 
     quantity = int(shares)
@@ -202,13 +202,15 @@ def api_symbols2():
 @app.route("/api/sell", methods=["POST"])
 @login_required
 def api_sell2():
-    symbol = lookup(request.form.get("symbol"))
-    shares = request.form.get("shares")
 
-    if symbol is "":
+    content = request.get_json(force=True)
+    symbol = lookup(content["symbol"])
+    shares = content["shares"]
+
+    if symbol is None:
         raise HTTPException("choose a symbol", 403)
 
-    if shares is "":
+    if shares is None:
         raise HTTPException("must provide shares", 403)
 
     quantity = int(shares)

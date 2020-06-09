@@ -6,19 +6,22 @@
 
 {% block main %}
 {% raw %}
+    <div id="form_buy">
+        <form  method="post">
+            <div class="form-group">
+                <input v-model="symbol" autocomplete="off" autofocus class="form-control" name="symbol" placeholder="Symbol" type="text">
+            </div>
+            <div class="form-group">
+                <input v-model="shares" autocomplete="off" autofocus class="form-control" name="shares" placeholder="Shares" type="text">
+            </div>
+            <button @click.stop.prevent="submit()" class="btn btn-primary" type="submit">Buy</button>
+        </form>
 
-    <form id="form_buy" method="post">
-        <div class="form-group">
-            <input v-model="symbol" autocomplete="off" autofocus class="form-control" name="symbol" placeholder="Symbol" type="text">
+        <div id="error_alert" v-for="error in errors" style="margin: 50px; width: 300px; margin-left: 380px" class="alert alert-danger" role="alert" >
+            {{ error }}
         </div>
-        <div class="form-group">
-            <input v-model="shares" autocomplete="off" autofocus class="form-control" name="shares" placeholder="Shares" type="text">
-        </div>
-        <button @click.stop.prevent="submit()" class="btn btn-primary" type="submit">Buy</button>
-    </form>
-    <div id="error" v-for="error in errors" style="display: none; margin: 50px; width: 300px; margin-left: 380px" class="alert alert-danger" role="alert" >
-            {{ error.message }}
     </div>
+
 
 <script>
     var form_buy = new Vue({
@@ -30,23 +33,26 @@
         },
         methods: {
             submit() {
+                this.errors = []
+                if (this.symbol && this.shares) {
+                    const request = new Request(
+                        "api/buy",
+                        {
+                            method: "POST",
+                            body: JSON.stringify({symbol: this.symbol, shares: parseInt(this.shares, 10)})
+                        }
+                    );
+                    const res = fetch(request);
 
-                const request = new Request(
-                "api/buy",
-                {
-                    method: "POST",
-                    body: JSON.stringify({symbol: this.symbol, shares: parseInt(this.shares, 10)})
+
+                    window.location.href = "index.html"
+                } else {
+                    if(!this.symbol) this.errors.push("Symbol required.")
+                    if(!this.shares) this.errors.push("Shares required.")
                 }
-                );
-            const res = fetch(request);
 
-            window.location.href = "index.html"
             }
         }
-
-
-
-
     })
 
 </script>
