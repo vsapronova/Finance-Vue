@@ -5,50 +5,101 @@
 {% endblock %}
 
 {% block main %}
-    <form id="form_register" method="post">
-        <div class="form-group">
-            <input autocomplete="off" autofocus class="form-control" name="username" placeholder="Username" type="text">
+    {% raw %}
+    <div id="form_register">
+        <form method="post">
+            <div class="form-group">
+                <input v-model="username" autocomplete="off" autofocus class="form-control" name="username" placeholder="Username" type="text">
+            </div>
+            <div class="form-group">
+                <input v-model="password" class="form-control" name="password" placeholder="Password" type="password">
+            </div>
+            <div class="form-group">
+                <input v-model="confirm_pass" class="form-control" name="confirmation" placeholder="Confirm password" type="password">
+            </div>
+            <button @click.stop.prevent="submit()" class="btn btn-primary" type="submit">Register</button>
+        </form>
+        <div id="error" v-for="error in errors" style="margin: 50px; width: 300px; margin-left: 380px" class="alert alert-danger" role="alert" >
+                {{ error }}
         </div>
-        <div class="form-group">
-            <input class="form-control" name="password" placeholder="Password" type="password">
-        </div>
-        <div class="form-group">
-            <input class="form-control" name="confirmation" placeholder="Confirm password" type="password">
-        </div>
-        <button class="btn btn-primary" type="submit">Register</button>
-    </form>
-    <div id="error" style="display: none; margin: 50px; width: 300px; margin-left: 380px" class="alert alert-danger" role="alert" >
-
     </div>
     <script>
+        var form_reg = new Vue({
+            el: '#form_register',
+            data: {
+                username: null,
+                password: null,
+                confirm_pass: null,
+                errors: []
+            },
 
+            methods: {
+                submit() {
+                    this.errors = []
+                    if (this.username && this.password && this.confirm_pass) {
+                        if (this.password === this.confirm_pass) {
+                            const request = new Request(
+                                "api/register",
+                                {
+                                    method: "POST",
+                                    body: JSON.stringify({username: this.username, password: this.password, confirm_pass: this.confirm_pass})
+                                }
+                            );
+                            const response = fetch(request)
+                                .then(response => {
+                                    if (response.status === 200) {
+                                        window.location.href = "login.html"
+                                    } else {
+                                        response.json()
+                                            .then(json => {
+                                                this.errors.push(json.message)
+                                            })
+                                    }
+                                })
+                        } else {
+                            this.errors.push("Passwords are not matched")
 
-    $( document ).ready(function() {
-
-        $( "#form_register" ).submit(function( event ) {
-            event.preventDefault();
-            $("#error").hide();
-
-
-            var values = $("#form_register").serializeArray();
-
-            var request = $.post( "/api/register", values )
-            .done( function(data) {
-                window.location.href = "login.html";
-            })
-            .fail( function(xhr, textStatus, errorThrown) {
-                if (xhr.hasOwnProperty('responseJSON')) {
-                    $("#error").show();
-                    $("#error").text(xhr.responseJSON.message);
-                } else {
-                    $("#error").show();
-                    $("#error").text("Something really unexpected happened");
+                        }
+                    } else {
+                        if(!this.username) this.errors.push("Username required.")
+                        if(!this.password) this.errors.push("Password required.")
+                        if(!this.confirm_pass) this.errors.push("Password confirmation required.")
+                    }
                 }
-            });
-
+            }
         })
+    </script>
 
-    })
+    <!--<script>-->
 
-</script>
+
+    <!--$( document ).ready(function() {-->
+
+        <!--$( "#form_register" ).submit(function( event ) {-->
+            <!--event.preventDefault();-->
+            <!--$("#error").hide();-->
+
+
+            <!--var values = $("#form_register").serializeArray();-->
+
+            <!--var request = $.post( "/api/register", values )-->
+            <!--.done( function(data) {-->
+                <!--window.location.href = "login.html";-->
+            <!--})-->
+            <!--.fail( function(xhr, textStatus, errorThrown) {-->
+                <!--if (xhr.hasOwnProperty('responseJSON')) {-->
+                    <!--$("#error").show();-->
+                    <!--$("#error").text(xhr.responseJSON.message);-->
+                <!--} else {-->
+                    <!--$("#error").show();-->
+                    <!--$("#error").text("Something really unexpected happened");-->
+                <!--}-->
+            <!--});-->
+
+        <!--})-->
+
+    <!--})-->
+
+<!--</script>-->
+{% endraw %}
 {% endblock %}

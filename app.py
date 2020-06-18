@@ -99,9 +99,11 @@ def api_login2():
 
 @app.route("/api/register", methods=["POST"])
 def api_register2():
-    username = request.form.get("username")
-    password = request.form.get("password")
-    conf_passw = request.form.get("confirmation")
+    content = request.get_json(force=True)
+    username = content['username']
+    password = content['password']
+    conf_passw = content["confirm_pass"]
+
     if not username:
         raise HTTPException("must provide username", 403)
     elif not password:
