@@ -162,8 +162,8 @@ def api_quote2():
 @login_required
 def api_buy2():
     content = request.get_json(force=True)
-    symbol = content['symbol']
-    shares = content['shares']
+    symbol = content["symbol"]
+    shares = content["shares"]
 
     if symbol is None:
         raise HTTPException("symbol can't be empty", 403)

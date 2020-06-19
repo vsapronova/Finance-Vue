@@ -41,11 +41,19 @@
                             method: "POST",
                             body: JSON.stringify({symbol: this.symbol, shares: parseInt(this.shares, 10)})
                         }
-                    );
-                    const res = fetch(request);
+                    )
+                    const response = fetch(request)
+                        .then(response => {
+                            if (response.status === 200) {
+                                window.location.href = "index.html"
+                            } else {
+                                response.json()
+                                    .then(json => {
+                                        this.errors.push(json.message)
+                                    })
+                            }
+                        })
 
-
-                    window.location.href = "index.html"
                 } else {
                     if(!this.symbol) this.errors.push("Symbol required.")
                     if(!this.shares) this.errors.push("Shares required.")
