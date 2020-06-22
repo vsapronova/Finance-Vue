@@ -6,7 +6,8 @@
 
 {% block main %}
 {% raw %}
-    <form id="form_sell" method="post">
+  <div id="form_sell">
+    <form  method="post">
         <div class="form-group">
             <select v-model="selected" id="symbols_selector" class="form-control" name="symbol">
                 <option disabled selected value>Symbol</option>
@@ -19,9 +20,10 @@
         <button @click.stop.prevent="sell()" class="btn btn-primary" type="submit">Sell</button>
     </form>
 
-    <div id="error" style="display: none; margin: 50px; width: 300px; margin-left: 380px" class="alert alert-danger" role="alert" >
+    <div v-for="error in errors" id="error" style="margin: 50px; width: 300px; margin-left: 380px" class="alert alert-danger" role="alert" >
+        {{ error }}
     </div>
-
+  </div>
 <script>
     var sell = new Vue ({
         el: '#form_sell',
@@ -29,6 +31,7 @@
             selected: '',
             symbols: [],
             shares: null,
+            errors: []
         },
         created () {
             fetch('/api/symbols')
@@ -40,17 +43,30 @@
         },
         methods: {
             sell() {
-                const request = new Request(
-                "api/sell",
-                {
-                    method: "POST",
-                    body: JSON.stringify({symbol: this.selected, shares: parseInt(this.shares, 10)})
+                this.errors = []
+                if (this.selected && this.shares) {
+                    const request = new Request(
+                    "api/sell",
+                    {
+                        method: "POST",
+                        body: JSON.stringify({symbol: this.selected, shares: parseInt(this.shares, 10)})
+                    }
+                    )
+                    const res = fetch(request)
+                        .then(response => {
+                            if (response.status === 200) {
+                                window.location.href = "index.html"
+                            } else {
+                                response.json()
+                                    .then(json => {
+                                        this.errors.push(json.message)
+                                    })
+                            }
+                        })
+                } else {
+                    if(!this.selected) this.errors.push("Symbol required.")
+                    if(!this.shares) this.errors.push("Shares required.")
                 }
-                );
-            const res = fetch(request);
-
-            window.location.reload("index.html")
-            window.location.href = "index.html"
             }
         }
 
