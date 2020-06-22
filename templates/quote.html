@@ -5,55 +5,72 @@
 {% endblock %}
 
 {% block main %}
+{% raw %}
 
 
-
-    <form id="form_quote" method="post">
-        <div class="form-group">
-            <input autocomplete="off" autofocus class="form-control" name="symbol" placeholder="Stock's symbol" type="text">
+    <div id="form_quote">
+        <form  method="post">
+            <div class="form-group">
+                <input v-model="symbol" autocomplete="off" autofocus class="form-control" name="symbol" placeholder="Stock's symbol" type="text">
+            </div>
+            <button @click.stop.prevent="get_quote()" class="btn btn-primary" type="submit">Get a quote</button>
+        </form>
+        <div id="quote">
         </div>
-        <button class="btn btn-primary" type="submit">Get a quote</button>
-    </form>
-    <div id="quote">
-    </div>
-    <script type="text/html" id="quote_template">
-    <![CDATA[
-    <div class="info" style="margin-top: 30px">
-        <p style="font-weight: bold" ><%= this.name %></p>
-        <p style="font-weight: bold" ><%= this.price %></p>
-        <p style="font-weight: bold" ><%= this.symbol %></p>
-    </div>
-    ]]>
-    </script>
-    <div id="error" style="display: none; margin: 50px; width: 300px; margin-left: 380px" class="alert alert-danger" role="alert" >
 
+        <div class="info" style="margin-top: 30px">
+            <p style="font-weight: bold" >{{ this.name }}</p>
+            <p style="font-weight: bold" >{{ this.price }}</p>
+            <p style="font-weight: bold" >{{ this.company }}</p>
+        </div>
+
+        <div v-for="error in errors" id="error" style="margin: 50px; width: 300px; margin-left: 380px" class="alert alert-danger" role="alert" >
+                {{ error }}
+        </div>
     </div>
     <script>
-    $( document ).ready(function() {
-        $( "#form_quote" ).submit(function( event ) {
-            event.preventDefault();
-            $("#error").hide();
+        var quote = new Vue ({
+            el: "#form_quote",
+            data: {
+                symbol: '',
+                company: '',
+                name: null,
+                price: null,
+                errors: []
+            },
+            methods: {
+                get_quote() {
+                    this.errors = []
+                    if (this.symbol) {
+                        const request = new Request(
+                            "api/quote",
+                            {
+                                method: "POST",
+                                body: JSON.stringify({symbol: this.symbol})
+                            })
 
-            var values = $("#form_quote").serializeArray();
-            $('#form_quote').each(function(){
-                this.reset();
-            });
-
-            var request = $.post( "/api/quote", values )
-                .done( function(data) {
-                    const json_data = JSON.parse(request.responseText);
-                    $('#quote').html($('#quote_template').jqote(json_data.quote));
-                })
-                .fail( function(xhr, textStatus, errorThrown) {
-                    if (xhr.hasOwnProperty('responseJSON')) {
-                        $("#error").show();
-                        $("#error").text(xhr.responseJSON.message);
+                        const response = fetch(request)
+                            .then(response => {
+                                if (response.status === 200) {
+                                    response.json()
+                                        .then(json => {
+                                            this.name = json.quote.name,
+                                            this.price = json.quote.price,
+                                            this.company = json.quote.symbol
+                                        })
+                                } else {
+                                    response.json()
+                                        .then(json => {
+                                            this.errors.push(json.message)
+                                        })
+                                }
+                            })
                     } else {
-                        $("#error").show();
-                        $("#error").text("Something really unexpected happened");
+                        if(!this.symbol) this.errors.push("Symbol required.")
                     }
-                });
+                }
+            }
         })
-    })
     </script>
+{% endraw %}
 {% endblock %}

@@ -150,7 +150,8 @@ def api_index2():
 def api_quote2():
     """Get stock quote."""
     # session.clear()
-    symbol = request.form.get("symbol")
+    content = request.get_json(force=True)
+    symbol = content["symbol"]
     if symbol is "":
         raise HTTPException("symbol can't be empty", 403)
     quote = lookup(symbol)
